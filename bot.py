@@ -3,8 +3,10 @@ import logging
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, ContextTypes, filters
 from pymongo import MongoClient
+from pymongo.server_api import ServerApi
 import random
 from datetime import datetime
+import certifi
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -16,7 +18,22 @@ BOT_TOKEN = os.environ.get('BOT_TOKEN')
 MONGO_URI = os.environ.get('MONGO_URI')
 CHANNEL_ID = os.environ.get('PRIVATE_CHANNEL_ID')
 
-client = MongoClient(MONGO_URI)
+client = MongoClient(
+    MONGO_URI,
+    server_api=ServerApi('1'),
+    tlsCAFile=certifi.where(),
+    serverSelectionTimeoutMS=5000,
+    connectTimeoutMS=10000,
+    socketTimeoutMS=10000
+)
+
+try:
+    client.admin.command('ping')
+    logger.info("MongoDB connection successful!")
+except Exception as e:
+    logger.error(f"MongoDB connection failed: {e}")
+    raise
+
 db = client['telegram_file_bot']
 files_collection = db['files']
 users_collection = db['users']
@@ -83,7 +100,7 @@ LANGUAGES = {
         'file_retrieved': '📥 这是您的文件（ID：{}）。',
         'send_file': '📁 请发送文件给我保存。',
         'choose_language': '🌍 请选择您的语言：',
-        'language_set': '✅语言已设置为中文！'
+        'language_set': '✅ 语言已设置为中文！'
     }
 }
 
@@ -94,7 +111,7 @@ def generate_unique_id():
             return unique_id
 
 def get_user_language(user_id):
-    user = users_collection.find_one({'user_id': user_id})
+    user = users_collection.find_one({'user_id': user.id})
     return user.get('language', 'en') if user else 'en'
 
 def get_text(user_id, key):
