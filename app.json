@@ -1,0 +1,42 @@
+{
+  "name": "Telegram File Manager Bot",
+  "description": "Lightning-fast Telegram bot that forwards files to channel with unique 9-digit IDs. Optimized for Heroku Standard-2X dynos with stack-24.",
+  "repository": "https://github.com/rinlte/tb",
+  "logo": "https://telegram.org/img/t_logo.png",
+  "keywords": [
+    "telegram",
+    "bot",
+    "file-manager",
+    "python",
+    "mongodb",
+    "heroku",
+    "forward",
+    "no-download"
+  ],
+  "stack": "heroku-24",
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
+  ],
+  "formation": {
+    "worker": {
+      "quantity": 1,
+      "size": "standard-2x"
+    }
+  },
+  "env": {
+    "BOT_TOKEN": {
+      "description": "Your Telegram Bot Token from @BotFather",
+      "required": true
+    },
+    "MONGO_URI": {
+      "description": "MongoDB connection URI (mongodb+srv://username:password@cluster.mongodb.net/database)",
+      "required": true
+    },
+    "PRIVATE_CHANNEL_ID": {
+      "description": "Your Telegram channel ID (e.g., -1001234567890) OR username (e.g., @yourchannel). Bot must be admin in this channel.",
+      "required": true
+    }
+  }
+}
